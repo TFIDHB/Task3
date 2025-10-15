@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>cbd97fb0-dd17-4921-92e8-0d2826072bf1</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Task2.Core\Task3.Core.csproj" />
+    <ProjectReference Include="..\Task3.Infrastructure\Task3.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
