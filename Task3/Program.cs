@@ -21,7 +21,7 @@ namespace Task3
 
         static string GetTaskStatus(bool isCompleted)
         {
-            return isCompleted ? "Завершена" : "Не завершена";
+            return isCompleted ? Message.TaskCompleted : Message.TaskIncompleted;
         }
 
         static string ReadString(string promt, int maxLength, bool allowEmpty)
@@ -31,12 +31,12 @@ namespace Task3
                 Console.Write(promt);
                 string input = Console.ReadLine();
                 if (!allowEmpty && string.IsNullOrEmpty(input)) {
-                    Console.WriteLine("Это поле не может быть пустым!");
+                    Console.WriteLine(Message.FieldCannotBeEmpty);
                     continue;
                 }
 
                 if (input.Length > maxLength) {
-                    Console.WriteLine($"Значение поля не может превышать ограничение в {maxLength} символов!");
+                    Console.WriteLine(Message.FieldTooLong, maxLength);
                     continue;
                 }
 
@@ -51,9 +51,10 @@ namespace Task3
             {
                 if (!tasks.Any())
                 {
-                    Console.WriteLine("Задачи отвутствуют!");
+                    Console.WriteLine(Message.NoTasks);
                     return;
                 }
+
                 foreach (var task in tasks)
                 {
                     Console.WriteLine($"{task.Id}: {task.Title} | {task.Description} | {GetTaskStatus(task.IsCompleted)} | {task.CreatedAt}");
@@ -61,38 +62,41 @@ namespace Task3
             }
 
             catch (Exception ex) { 
-                Console.WriteLine($"Ошибка при загрузке задач: {ex.Message}");
+                Console.WriteLine(Message.TasksLoadError, ex.Message);
             }
 
         }
 
+
         static void ShowTaskById(IRepository repository)
         {
-            try
+            Console.Write("Введите ID задачи: ");
+            string input = Console.ReadLine();
+
+            if (!int.TryParse(input, out int id))
             {
-                Console.Write("Введите ID задачи: ");
-                if (int.TryParse(Console.ReadLine(), out int id))
-                {
-                    var task = repository.GetTask(id);
-                    if (task != null)
-                    {
-                        Console.WriteLine($"ID: {task.Id}");
-                        Console.WriteLine($"Заголовок: {task.Title}");
-                        Console.WriteLine($"Описание: {task.Description}");
-                        Console.WriteLine($"Статус: {GetTaskStatus(task.IsCompleted)}");
-                        Console.WriteLine($"Создана: {task.CreatedAt}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Задача не найдена!");
-                    }
-                }
-                else Console.WriteLine("Некорректный ID!");
+                Console.WriteLine(Message.InvalidID);
+                return;
             }
 
+            try
+            {
+                var task = repository.GetTask(id);
+                if (task == null)
+                {
+                    Console.WriteLine(Message.TaskNotFound);
+                    return;
+                }
+
+                Console.WriteLine($"ID: {task.Id}");
+                Console.WriteLine($"Заголовок: {task.Title}");
+                Console.WriteLine($"Описание: {task.Description}");
+                Console.WriteLine($"Статус: {GetTaskStatus(task.IsCompleted)}");
+                Console.WriteLine($"Создана: {task.CreatedAt}");
+            }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при загрузке задач: {ex.Message}");
+                Console.WriteLine(Message.TasksLoadError, ex.Message);
             }
         }
 
@@ -114,78 +118,89 @@ namespace Task3
                 };
 
                 repository.Create(newTask);
-                Console.WriteLine("Задача добавлена.");
+                Console.WriteLine(Message.TaskAdded);
             }
 
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка: {ex.Message}");
+                Console.WriteLine(Message.Error, ex.Message);
             }
 
         }
 
         static void UpdateTask(IRepository repository) {
+
+            Console.Write("Введите ID задачи для обновления: ");
+            string input = Console.ReadLine();
+
+            if (!int.TryParse(input, out int updateId))
+            {
+                Console.WriteLine(Message.InvalidID);
+                return;
+            }
+
             try
             {
-                Console.Write("Введите ID задачи для обновления: ");
-                if (int.TryParse(Console.ReadLine(), out int updateId))
+                var taskToUpdate = repository.GetTask(updateId);
+                if (taskToUpdate == null)
                 {
-                    var taskToUpdate = repository.GetTask(updateId);
-                    if (taskToUpdate != null)
+                    Console.WriteLine(Message.TaskNotFound);
+                    return;
+                }
+
+                taskToUpdate.Title = ReadString("Новый заголовок: ", 255, false);
+
+                Console.Write("Новое описание: ");
+                taskToUpdate.Description = Console.ReadLine();
+
+                while (true)
+                {
+                    Console.Write("Завершена? (true/false): ");
+                    string? statusInput = Console.ReadLine();
+
+                    if (bool.TryParse(statusInput, out bool isCompleted))
                     {
-                        taskToUpdate.Title = ReadString("Новый заголовок: ", 255, false);
-                        Console.Write("Новое описание: ");
-                        taskToUpdate.Description = Console.ReadLine();
-                        
-                        while (true)
-                        {
-                            Console.Write("Завершена? (true/false): ");
-                            if (bool.TryParse(Console.ReadLine(), out bool isCompleted))
-                            {
-                                taskToUpdate.IsCompleted = isCompleted;
-                                repository.Update(taskToUpdate);
-                                Console.WriteLine("Задача обновлена.");
-                                break;
-                            }
-                            Console.WriteLine("Некорректный ввод статуса!");
-                        }
+                        taskToUpdate.IsCompleted = isCompleted;
+                        repository.Update(taskToUpdate);
+                        Console.WriteLine(Message.TaskUpdated);
+                        break;
                     }
 
-                    else Console.WriteLine("Задача не найдена!");
+                    Console.WriteLine(Message.InvalidStatus);
                 }
-                else Console.WriteLine("Некорректный ID!");
             }
-
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка: {ex.Message}");
+                Console.WriteLine(Message.Error, ex.Message);
             }
-
         }
+        static void DeleteTask(IRepository repository)
+        {
+            Console.Write("Введите ID задачи для удаления: ");
+            string input = Console.ReadLine();
 
-        static void DeleteTask(IRepository repository) {
+            if (!int.TryParse(input, out int deleteId))
+            {
+                Console.WriteLine(Message.InvalidID);
+                return;
+            }
+
             try
             {
-                Console.Write("Введите ID задачи для удаления: ");
-                if (int.TryParse(Console.ReadLine(), out int deleteId))
+                var task = repository.GetTask(deleteId);
+                if (task == null)
                 {
-                    var task = repository.GetTask(deleteId);
-                    if (task == null)
-                    {
-                        Console.WriteLine("Задача не найдена!");
-                        return;
-                    }
-
-                    repository.Delete(deleteId);
-                    Console.WriteLine("Задача удалена.");
+                    Console.WriteLine(Message.TaskNotFound);
+                    return;
                 }
-                else Console.WriteLine("Некорректный ID!");
-            }
 
-            catch (Exception ex) {
-                Console.WriteLine($"Ошибка: {ex.Message}");
+                repository.Delete(deleteId);
+                Console.WriteLine(Message.TaskDeleted);
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine(Message.Error, ex.Message);
+            }
         }
         static void Main(string[] args)
         {
@@ -230,7 +245,7 @@ namespace Task3
                         return;
 
                     default:
-                        Console.WriteLine("Неверный выбор!");
+                        Console.WriteLine(Message.InvalidChoice);
                         break;
                 }
             }
