@@ -10,11 +10,11 @@ namespace Task3.Core
 {
     public interface IRepository
     {
-        IEnumerable<TaskClass> GetTaskList();
-        TaskClass GetTask(int id);
-        void Create(TaskClass task);
-        void Update(TaskClass task);
-        void Delete(int id);
+        Task<IEnumerable<TaskClass>> GetTaskListAsync();
+        Task<TaskClass> GetTaskAsync(int id);
+        Task CreateAsync(TaskClass task);
+        Task UpdateAsync(TaskClass task);
+        Task DeleteAsync(int id);
 
     }
 }

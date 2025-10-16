@@ -44,9 +44,9 @@ namespace Task3
             }
         }
 
-        static void ShowAllTasks(IRepository repository)
+        static async Task ShowAllTasksAsync(IRepository repository)
         {
-            var tasks = repository.GetTaskList();
+            var tasks = await repository.GetTaskListAsync();
             try
             {
                 if (!tasks.Any())
@@ -68,7 +68,7 @@ namespace Task3
         }
 
 
-        static void ShowTaskById(IRepository repository)
+        static async Task ShowTaskByIdAsync(IRepository repository)
         {
             Console.Write("Введите ID задачи: ");
             string input = Console.ReadLine();
@@ -81,7 +81,7 @@ namespace Task3
 
             try
             {
-                var task = repository.GetTask(id);
+                var task = await repository.GetTaskAsync(id);
                 if (task == null)
                 {
                     Console.WriteLine(Message.TaskNotFound);
@@ -100,7 +100,7 @@ namespace Task3
             }
         }
 
-        static void AddTask(IRepository repository)
+        static async Task AddTaskAsync(IRepository repository)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace Task3
                     CreatedAt = DateTime.Now
                 };
 
-                repository.Create(newTask);
+                await repository.CreateAsync(newTask);
                 Console.WriteLine(Message.TaskAdded);
             }
 
@@ -128,7 +128,7 @@ namespace Task3
 
         }
 
-        static void UpdateTask(IRepository repository) {
+        static async Task UpdateTaskAsync(IRepository repository) {
 
             Console.Write("Введите ID задачи для обновления: ");
             string input = Console.ReadLine();
@@ -141,7 +141,7 @@ namespace Task3
 
             try
             {
-                var taskToUpdate = repository.GetTask(updateId);
+                var taskToUpdate = await repository.GetTaskAsync(updateId);
                 if (taskToUpdate == null)
                 {
                     Console.WriteLine(Message.TaskNotFound);
@@ -161,7 +161,7 @@ namespace Task3
                     if (bool.TryParse(statusInput, out bool isCompleted))
                     {
                         taskToUpdate.IsCompleted = isCompleted;
-                        repository.Update(taskToUpdate);
+                        await repository.UpdateAsync(taskToUpdate);
                         Console.WriteLine(Message.TaskUpdated);
                         break;
                     }
@@ -174,7 +174,7 @@ namespace Task3
                 Console.WriteLine(Message.Error, ex.Message);
             }
         }
-        static void DeleteTask(IRepository repository)
+        static async Task DeleteTaskAsync(IRepository repository)
         {
             Console.Write("Введите ID задачи для удаления: ");
             string input = Console.ReadLine();
@@ -187,14 +187,14 @@ namespace Task3
 
             try
             {
-                var task = repository.GetTask(deleteId);
+                var task = await repository.GetTaskAsync(deleteId);
                 if (task == null)
                 {
                     Console.WriteLine(Message.TaskNotFound);
                     return;
                 }
 
-                repository.Delete(deleteId);
+                await repository.DeleteAsync(deleteId);
                 Console.WriteLine(Message.TaskDeleted);
             }
             catch (Exception ex)
@@ -202,7 +202,7 @@ namespace Task3
                 Console.WriteLine(Message.Error, ex.Message);
             }
         }
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
@@ -221,23 +221,23 @@ namespace Task3
                 switch (choice)
                 {
                     case "1":
-                        ShowAllTasks(repository);
+                        await ShowAllTasksAsync(repository);
                         break;
 
                     case "2":
-                        ShowTaskById(repository);
+                        await ShowTaskByIdAsync(repository);
                         break;
 
                     case "3":
-                        AddTask(repository);
+                        await AddTaskAsync(repository);
                         break;
 
                     case "4":
-                        UpdateTask(repository);
+                        await UpdateTaskAsync(repository);
                         break;
 
                     case "5":
-                        DeleteTask(repository);
+                        await DeleteTaskAsync(repository);
                         break;
 
                     case "0":

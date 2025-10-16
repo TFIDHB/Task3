@@ -21,38 +21,39 @@ namespace Task3.Infrastructure
 
         private SqlConnection GetConnection() => new SqlConnection(_connectionString);
 
-        public IEnumerable<TaskClass> GetTaskList()
+        public async Task<IEnumerable<TaskClass>> GetTaskListAsync()
         {
             using var connection = GetConnection();
             var sql = @"SELECT * FROM Tasks";
-            return connection.Query<TaskClass>(sql).ToList();
+            var result = await connection.QueryAsync<TaskClass>(sql);
+            return result.ToList();
         }
 
-        public TaskClass GetTask(int id) { 
+        public async Task<TaskClass> GetTaskAsync(int id) { 
             using var connection = GetConnection();
             var sql = @"SELECT * FROM Tasks WHERE Id = @Id";
-            return connection.QueryFirstOrDefault<TaskClass>(sql, new { Id = id });
+            return await connection.QueryFirstOrDefaultAsync<TaskClass>(sql, new { Id = id });
         }
 
-        public void Create(TaskClass task) { 
+        public async Task CreateAsync(TaskClass task) { 
             using var connection = GetConnection();
             var sql = @"INSERT INTO Tasks (Title, Description, IsCompleted, CreatedAt)
                 VALUES(@Title, @Description, @IsCompleted, @CreatedAt)";
-            connection.Execute(sql, task);
+             await connection.ExecuteAsync(sql, task);
         }
 
-        public void Update(TaskClass task) { 
+        public async Task UpdateAsync(TaskClass task) { 
             using var connection = GetConnection();
             var sql = @"UPDATE Tasks
                 SET Title = @Title, Description = @Description, IsCompleted = @IsCompleted
                 WHERE Id = @Id";
-            connection.Execute(sql, task);
+            await connection.ExecuteAsync(sql, task);
         }
 
-        public void Delete(int id) { 
+        public async Task DeleteAsync(int id) { 
             using var connection = GetConnection();
             var sql = @"DELETE FROM Tasks WHERE Id = @Id";
-            connection.Execute(sql, new { Id = id });
+            await connection.ExecuteAsync(sql, new { Id = id });
         }
     }
 }
